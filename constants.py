@@ -1,5 +1,19 @@
 from splendor_ai.entities.card import Card
 from splendor_ai.entities.gem_color import GemColor
+from splendor_ai.entities.noble import Noble
+
+NOBLES = [
+    Noble(4, 0, 0, 0, 4),
+    Noble(0, 3, 3, 3, 0),
+    Noble(0, 0, 4, 4, 0),
+    Noble(4, 0, 4, 0, 0),
+    Noble(0, 4, 0, 0, 4),
+    Noble(0, 4, 0, 4, 0),
+    Noble(0, 3, 0, 3, 3),
+    Noble(3, 0, 3, 3, 0),
+    Noble(3, 0, 3, 0, 3),
+    Noble(3, 3, 0, 0, 3),
+]
 
 FULL_DECK = [
     Card(1, GemColor.BLACK, 0, 1, 1, 1, 1, 0),
