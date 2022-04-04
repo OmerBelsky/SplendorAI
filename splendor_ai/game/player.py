@@ -10,6 +10,7 @@ from splendor_ai.entities.noble import Noble
 @dataclass
 class Player:
     cards: List[Card] = field(default_factory=list)
+    mortgage_card: List[Card] = field(default_factory=list)
     currency: Dict[GemColor, int] = field(default_factory=lambda: defaultdict(int))
     nobles: List[Noble] = field(default_factory=list)
 
