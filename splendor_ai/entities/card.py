@@ -17,8 +17,10 @@ class Card:
 
     @property
     def price(self) -> Dict[GemColor, int]:
-        return {GemColor.WHITE: self.price_w,
-                GemColor.RED: self.price_r,
-                GemColor.BLUE: self.price_u,
-                GemColor.GREEN: self.price_g,
-                GemColor.BLACK: self.price_b}
+        return {
+            GemColor.WHITE: self.price_w,
+            GemColor.RED: self.price_r,
+            GemColor.BLUE: self.price_u,
+            GemColor.GREEN: self.price_g,
+            GemColor.BLACK: self.price_b
+        }
