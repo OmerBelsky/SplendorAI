@@ -1,14 +1,9 @@
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.constants import NOBLES, FULL_DECK
+from splendor_ai.game.errors import IncorrectNumPlayersError
 import numpy as np
 
-
-class IncorrectNumPlayersError(Exception):
-    def __init__(self):
-        self.message = "Too many players. Player count should be an integer between 2 and 4."
-
-
-class Splendor:
+class Game:
 
     def __init__(self, num_players):
 
