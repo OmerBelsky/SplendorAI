@@ -7,3 +7,4 @@ class GemColor(Enum):
     BLUE = 3
     GREEN = 4
     BLACK = 5
+    JOKER = 6
