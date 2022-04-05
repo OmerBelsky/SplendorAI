@@ -53,6 +53,7 @@ class Game:
         self.player_turn = (self.player_turn + 1) % self.num_players
 
     def take_double_coins(self, player, coin_to_take, coins_to_return=None):
+      
         if coins_to_return is None:
             coins_to_return = dict()
 
