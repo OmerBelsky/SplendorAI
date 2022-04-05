@@ -48,9 +48,9 @@ class Game:
             player.currency[color] += 1
             self.board.coins[color] -= 1
 
-        for color in colors_to_return:
-            player.currency[color] -= 1
-            self.board.coins[color] += 1
+        for color, amnt in colors_to_return.items():
+            player.currency[color] -= amnt
+            self.board.coins[color] += amnt
 
     def take_double_coins(self, player, color_to_take, colors_to_return=None):
         if colors_to_return is None:
@@ -74,6 +74,6 @@ class Game:
         player.currency[color_to_take] += 2
         self.board.coins[color_to_take] -= 2
 
-        for color in colors_to_return:
-            player.currency[color] -= 1
-            self.board.coins[color] += 1
+        for color, amnt in colors_to_return.items():
+            player.currency[color] -= amnt
+            self.board.coins[color] += amnt
