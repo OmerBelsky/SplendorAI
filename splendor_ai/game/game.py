@@ -139,7 +139,6 @@ class Game:
         self._buy_card_check(player, level, idx, coins_to_pay)
 
         requested_card = self.board.decks[level].pop(idx - 1)
-
         for color, amnt in coins_to_pay.items():
             player.currency[color] -= amnt
             self.board.coins[color] += amnt
@@ -185,8 +184,5 @@ class Game:
                 self.board.coins[coin_to_return] += 1
 
         self._increment_player()
-
-
-
 
 
