@@ -114,6 +114,9 @@ class Game:
         if idx not in [1, 2, 3, 4]:
             raise ValueError("Card index must be an integer between 1 and 4")
 
+        if len(self.board.decks[level]) < idx:
+            raise ValueError("There is no card in this position")
+
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
             ValueError("You tried to pay with more coins than you own")
 
@@ -135,13 +138,51 @@ class Game:
 
         self._buy_card_check(player, level, idx, coins_to_pay)
 
-        requested_card = self.board.decks[level][idx - 1]
-
+        requested_card = self.board.decks[level].pop(idx - 1)
         for color, amnt in coins_to_pay.items():
             player.currency[color] -= amnt
             self.board.coins[color] += amnt
 
-        self.board.decks[level].pop(idx - 1)
         player.cards.append(requested_card)
 
         self._increment_player()
+
+    def _mortgage_card_check(self, player, level, idx, coin_to_return):
+
+        if player != self.players[self.player_turn]:
+            raise ValueError("It isn't this players turn")
+
+        if level not in [1, 2, 3]:
+            raise ValueError("Card level must be an integer between 1 and 3")
+
+        if idx not in [1, 2, 3, 4]:
+            raise ValueError("Card index must be an integer between 1 and 4")
+
+        if len(self.board.decks[level]) < idx:
+            raise ValueError("There is no card in this position")
+
+        if len(player.mortgage_card) == 3:
+            raise ValueError("Player already has 3 cards mortgaged")
+
+        if coin_to_return is None and len(player.currency) == 10:
+            raise ValueError("If you take a joker coin you must return another coin")
+
+        return True
+
+    def mortgage_card(self, player, level, idx, coin_to_return=None):
+
+        self._mortgage_card_check(player, level, idx, coin_to_return)
+
+        requested_card = self.board.decks[level].pop(idx - 1)
+        player.mortgage_card.append(requested_card)
+
+        if self.board.coins[GemColor.JOKER] > 0:
+            player.currency[GemColor.JOKER] += 1
+            self.board.coins[GemColor.JOKER] -= 1
+            if len(player.currency) == 11:
+                player.currency[coin_to_return] -= 1
+                self.board.coins[coin_to_return] += 1
+
+        self._increment_player()
+
+
