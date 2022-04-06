@@ -16,7 +16,10 @@ class Game:
         self.board = Board(self.num_players)
         self.player_turn = 0
 
-    def take_three_coins(self, player, coins_to_take, coins_to_return=None):
+    def _increment_player(self):
+        self.player_turn = (self.player_turn + 1) % self.num_players
+
+    def _take_three_coins_check(self, player, coins_to_take, coins_to_return=None):
 
         if coins_to_return is None:
             coins_to_return = dict()
@@ -42,6 +45,15 @@ class Game:
         if GemColor.JOKER in coins_to_take:
             raise ValueError("Jokers can only be taken via mortgaging")
 
+        return True
+
+    def take_three_coins(self, player, coins_to_take, coins_to_return=None):
+
+        if coins_to_return is None:
+            coins_to_return = dict()
+
+        self._take_three_coins_check(player, coins_to_take, coins_to_return)
+
         for color in coins_to_take:
             player.currency[color] += 1
             self.board.coins[color] -= 1
@@ -50,10 +62,11 @@ class Game:
             player.currency[color] -= amnt
             self.board.coins[color] += amnt
 
-        self.player_turn = (self.player_turn + 1) % self.num_players
+        self._increment_player()
 
-    def take_double_coins(self, player, coin_to_take, coins_to_return=None):
-      
+
+    def _take_double_coins_check(self, player, coin_to_take, coins_to_return):
+
         if coins_to_return is None:
             coins_to_return = dict()
 
@@ -72,6 +85,15 @@ class Game:
         if GemColor.JOKER == coin_to_take:
             raise ValueError("Jokers can only be taken via mortgaging")
 
+        return True
+
+    def take_double_coins(self, player, coin_to_take, coins_to_return=None):
+
+        if coins_to_return is None:
+            coins_to_return = dict()
+
+        self._take_double_coins_check(player, coin_to_take, coins_to_return)
+
         player.currency[coin_to_take] += 2
         self.board.coins[coin_to_take] -= 2
 
@@ -79,9 +101,9 @@ class Game:
             player.currency[color] -= amnt
             self.board.coins[color] += amnt
 
-        self.player_turn = (self.player_turn + 1) % self.num_players
+        self._increment_player()
 
-    def buy_card(self, player, level, idx, coins_to_pay):
+    def _buy_card_check(self, player, level, idx, coins_to_pay):
 
         if player != self.players[self.player_turn]:
             raise ValueError("It isn't this players turn")
@@ -95,14 +117,25 @@ class Game:
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
             ValueError("You tried to pay with more coins than you own")
 
+        discounts = {color: sum([color == card.gem_color for card in player.cards]) for color in self.board.coins}
+
         requested_card = self.board.decks[level][idx - 1]
-        diff_dict = {color: requested_card.price[color] - coins_to_pay[color] for color in self.board.coins}
+        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay[color]
+                     for color in self.board.coins}
 
         if any([diff_dict[color] < 0 for color in diff_dict]):
             raise ValueError("You over-payed a type of coin")
 
         if sum(diff_dict.values()) > coins_to_pay[GemColor.JOKER]:
             raise ValueError("You under-payed for the card")
+
+        return True
+
+    def buy_card(self, player, level, idx, coins_to_pay):
+
+        self._buy_card_check(player, level, idx, coins_to_pay)
+
+        requested_card = self.board.decks[level][idx - 1]
 
         for color, amnt in coins_to_pay.items():
             player.currency[color] -= amnt
@@ -111,4 +144,4 @@ class Game:
         self.board.decks[level].pop(idx - 1)
         player.cards.append(requested_card)
 
-        self.player_turn = (self.player_turn + 1) % self.num_players
+        self._increment_player()
