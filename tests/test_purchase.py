@@ -49,6 +49,7 @@ def test_cant_buy_without_paying():
     with pytest.raises(ValueError):
         game.buy_deck_card(players[game.player_turn], 1, 1, {color: 0 for color in GEM_COLORS})
 
+        
 def test_cant_buy_with_coins_not_owned():
     players = [Player() for _ in range(4)]
     game = Game(players)
@@ -56,6 +57,7 @@ def test_cant_buy_with_coins_not_owned():
         card = game.board.decks[1][1]
         game.buy_deck_card(players[game.player_turn], 1, 1, {color: card.price[color] for color in GEM_COLORS})
 
+        
 def test_card_purhcased():
     players = [Player() for _ in range(4)]
     game = Game(players)
@@ -70,5 +72,4 @@ def test_card_purhcased():
     assert all([players[0].currency[color] == (100 - card.price[color]) for color in GEM_COLORS])
     assert card not in game.board.decks[2]
     assert all([game.board.coins[color] == (7 + card.price[color]) for color in GEM_COLORS])
-
 
