@@ -1,6 +1,6 @@
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.game.board import Board
-import numpy as np
+
 
 class Game:
 
@@ -18,6 +18,19 @@ class Game:
 
     def _increment_player(self):
         self.player_turn = (self.player_turn + 1) % self.num_players
+
+    def distribute_nobles(self, player):
+        player_colors = {color: sum([color == card.gem_color for card in player.cards])
+                         for color in self.board.coins}
+
+        obtainable_nobles = [all([player_colors[color] >= req
+                                  for color, req in enumerate(noble.requirements)])
+                                          for noble in self.board._nobles]
+
+        nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
+
+        for idx in nobles_indices:
+            player.nobles.append(self.board._nobles.pop[idx])
 
     def _take_three_coins_check(self, player, coins_to_take, coins_to_return=None):
 
@@ -64,7 +77,6 @@ class Game:
 
         self._increment_player()
 
-
     def _take_double_coins_check(self, player, coin_to_take, coins_to_return):
 
         if coins_to_return is None:
@@ -103,7 +115,7 @@ class Game:
 
         self._increment_player()
 
-    def _buy_card_check(self, player, level, idx, coins_to_pay):
+    def _buy_deck_card_check(self, player, level, idx, coins_to_pay):
 
         if player != self.players[self.player_turn]:
             raise ValueError("It isn't this players turn")
@@ -118,34 +130,66 @@ class Game:
             raise ValueError("There is no card in this position")
 
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
-            ValueError("You tried to pay with more coins than you own")
+            raise ValueError("You tried to pay with more coins than you own")
 
         discounts = {color: sum([color == card.gem_color for card in player.cards]) for color in self.board.coins}
 
         requested_card = self.board.decks[level][idx - 1]
         diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay[color]
-                     for color in self.board.coins}
+                     for color in self.board.coins if color != GemColor.JOKER}
 
         if any([diff_dict[color] < 0 for color in diff_dict]):
             raise ValueError("You over-payed a type of coin")
 
-        if sum(diff_dict.values()) > coins_to_pay[GemColor.JOKER]:
-            raise ValueError("You under-payed for the card")
+        if sum(diff_dict.values()) != coins_to_pay[GemColor.JOKER]:
+            raise ValueError("You didn't include enough jokers for the purchase")
 
         return True
 
-    def buy_card(self, player, level, idx, coins_to_pay):
+    def _buy_card(self, player, card, coins_to_pay):
 
-        self._buy_card_check(player, level, idx, coins_to_pay)
-
-        requested_card = self.board.decks[level].pop(idx - 1)
         for color, amnt in coins_to_pay.items():
             player.currency[color] -= amnt
             self.board.coins[color] += amnt
 
-        player.cards.append(requested_card)
+        player.cards.append(card)
 
         self._increment_player()
+
+    def buy_deck_card(self, player, level, idx, coins_to_pay):
+        self._buy_deck_card_check(player, level, idx, coins_to_pay)
+        self._buy_card(player, self.board.decks[level].pop(idx - 1), coins_to_pay)
+
+    def _buy_mortgaged_card_check(self, player, idx, coins_to_pay):
+        if player != self.players[self.player_turn]:
+            raise ValueError("It isn't this players turn")
+
+        if idx not in [1, 2, 3]:
+            raise ValueError("Card index must be an integer between 1 and 3")
+
+        if len(player.mortgage_card) < idx:
+            raise ValueError("There is no card in this position")
+
+        if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
+            raise ValueError("You tried to pay with more coins than you own")
+
+        discounts = {color: sum([color == card.gem_color for card in player.cards]) for color in self.board.coins}
+
+        requested_card = player.mortgage_card[idx - 1]
+        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay[color]
+                     for color in self.board.coins if color != GemColor.JOKER}
+
+        if any([diff_dict[color] < 0 for color in diff_dict]):
+            raise ValueError("You over-payed a type of coin")
+
+        if sum(diff_dict.values()) != coins_to_pay[GemColor.JOKER]:
+            raise ValueError("You didn't include enough jokers for the purchase")
+
+        return True
+
+    def _buy_mortgaged_card(self, player, idx, coins_to_pay):
+        self._buy_mortgaged_card_check(player, idx, coins_to_pay)
+        self._buy_card(player, player.mortgage_card.pop(idx - 1), coins_to_pay)
 
     def _mortgage_card_check(self, player, level, idx, coin_to_return):
 
