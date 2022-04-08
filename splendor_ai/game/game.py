@@ -139,13 +139,13 @@ class Game:
 
         discounts = player.discounts
         requested_card = self.board.decks[level][idx - 1]
-        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay[color]
+        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay.get(color, 0)
                      for color in GEM_COLORS}
 
         if any([diff_dict[color] < 0 for color in diff_dict]):
             raise ValueError("You over-payed a type of coin")
 
-        if sum(diff_dict.values()) != coins_to_pay[GemColor.JOKER]:
+        if sum(diff_dict.values()) != coins_to_pay.get(GemColor.JOKER, 0):
             raise ValueError("You didn't include enough jokers for the purchase")
 
         return True
@@ -182,16 +182,16 @@ class Game:
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
             raise ValueError("You tried to pay with more coins than you own")
 
-        discounts = {color: sum([color == card.gem_color for card in player.cards]) for color in self.board.coins}
+        discounts = {color: sum([color == card.gem_color for card in player.cards]) for color in GEM_COLORS}
 
         requested_card = player.mortgage_card[idx - 1]
-        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay[color]
-                     for color in self.board.coins if color != GemColor.JOKER}
+        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay.get(color, 0)
+                     for color in GEM_COLORS}
 
         if any([diff_dict[color] < 0 for color in diff_dict]):
             raise ValueError("You over-payed a type of coin")
 
-        if sum(diff_dict.values()) != coins_to_pay[GemColor.JOKER]:
+        if sum(diff_dict.values()) != coins_to_pay.get(GemColor.JOKER, 0):
             raise ValueError("You didn't include enough jokers for the purchase")
 
         return True
