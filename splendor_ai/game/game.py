@@ -37,6 +37,19 @@ class Game:
         for idx in nobles_indices:
             player.nobles.append(self.board._nobles.pop[idx])
 
+    def distribute_nobles(self, player):
+        player_colors = {color: sum([color == card.gem_color for card in player.cards])
+                         for color in self.board.coins}
+
+        obtainable_nobles = [all([player_colors[color] >= req
+                                  for color, req in enumerate(noble.requirements)])
+                                          for noble in self.board._nobles]
+
+        nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
+
+        for idx in nobles_indices:
+            player.nobles.append(self.board._nobles.pop[idx])
+
     def _take_three_coins_check(self, player, coins_to_take, coins_to_return=None):
 
         if coins_to_return is None:
@@ -81,6 +94,7 @@ class Game:
             self.board.coins[color] += amnt
 
         self._increment_player()
+
 
     def _take_double_coins_check(self, player, coin_to_take, coins_to_return):
 
@@ -237,3 +251,5 @@ class Game:
                 self.board.coins[coin_to_return] += 1
 
         self._increment_player()
+
+
