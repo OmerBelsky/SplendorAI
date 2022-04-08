@@ -1,5 +1,10 @@
+from typing import Dict
+
+from splendor_ai.constants import GEM_COLORS
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.game.board import Board
+
+from splendor_ai.game.player import Player
 
 
 class Game:
@@ -25,7 +30,7 @@ class Game:
 
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
-                                          for noble in self.board._nobles]
+                             for noble in self.board._nobles]
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
@@ -115,7 +120,7 @@ class Game:
 
         self._increment_player()
 
-    def _buy_deck_card_check(self, player, level, idx, coins_to_pay):
+    def _buy_deck_card_check(self, player: Player, level: int, idx: int, coins_to_pay: Dict[GemColor, int]):
 
         if player != self.players[self.player_turn]:
             raise ValueError("It isn't this players turn")
@@ -132,11 +137,10 @@ class Game:
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
             raise ValueError("You tried to pay with more coins than you own")
 
-        discounts = {color: sum([color == card.gem_color for card in player.cards]) for color in self.board.coins}
-
+        discounts = player.discounts
         requested_card = self.board.decks[level][idx - 1]
         diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay[color]
-                     for color in self.board.coins if color != GemColor.JOKER}
+                     for color in GEM_COLORS}
 
         if any([diff_dict[color] < 0 for color in diff_dict]):
             raise ValueError("You over-payed a type of coin")
@@ -146,8 +150,13 @@ class Game:
 
         return True
 
-    def _buy_card(self, player, card, coins_to_pay):
+    def purchaseable_cards(self, player: Player):
+        cards_on_board = self.board.cards
+        purchasing_power = player.purchasing_power
+        affordable_cards = [card for card in cards_on_board if card.purchaseable_with(purchasing_power)]
+        return affordable_cards
 
+    def _buy_card(self, player, card, coins_to_pay):
         for color, amnt in coins_to_pay.items():
             player.currency[color] -= amnt
             self.board.coins[color] += amnt
@@ -228,5 +237,3 @@ class Game:
                 self.board.coins[coin_to_return] += 1
 
         self._increment_player()
-
-
