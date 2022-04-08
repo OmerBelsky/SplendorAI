@@ -26,7 +26,6 @@ class Board:
         players_to_coins = {4: 7, 3: 5, 2: 4}
         num_coins = players_to_coins[num_players]
 
-        # Initialize game parameters
         self.coins = {
             GemColor.WHITE: num_coins,
             GemColor.RED: num_coins,
@@ -36,4 +35,6 @@ class Board:
             GemColor.JOKER: 5
         }
 
-
+    @property
+    def cards(self):
+        return itertools.chain(self.decks[1], self.decks[2], self.decks[3])

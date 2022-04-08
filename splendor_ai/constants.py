@@ -2,6 +2,8 @@ from splendor_ai.entities.card import Card
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.entities.noble import Noble
 
+GEM_COLORS = [GemColor.BLACK, GemColor.BLUE, GemColor.RED, GemColor.GREEN, GemColor.WHITE]
+
 NOBLES = [
     Noble(4, 0, 0, 0, 4),
     Noble(0, 3, 3, 3, 0),

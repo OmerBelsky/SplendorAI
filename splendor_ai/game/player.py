@@ -2,6 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List, Dict
 
+from splendor_ai.constants import GEM_COLORS
 from splendor_ai.entities.card import Card
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.entities.noble import Noble
@@ -25,3 +26,20 @@ class Player:
     @property
     def card_points(self) -> int:
         return sum([c.point_value for c in self.cards])
+
+    @property
+    def discounts(self) -> Dict[GemColor, int]:
+        return {
+            color: sum([color == card.gem_color for card in self.cards])
+            for color in GEM_COLORS
+        }
+
+    @property
+    def purchasing_power(self) -> Dict[GemColor, int]:
+        combined_colors = dict()
+        discounts = self.discounts
+        for color in GEM_COLORS:
+            combined_colors[color] = self.currency[color] + discounts[color]
+        combined_colors[GemColor.JOKER] = self.currency[GemColor.JOKER]
+
+        return combined_colors
