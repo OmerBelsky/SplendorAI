@@ -16,3 +16,9 @@ def test_create_game_bad_player_count():
 
     with pytest.raises(ValueError):
         g = Game(players)
+
+def test_create_game_no_player_count():
+    players = []
+
+    with pytest.raises(ValueError):
+        g = Game(players)
