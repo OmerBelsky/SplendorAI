@@ -3,14 +3,11 @@ from typing import Dict
 from splendor_ai.constants import GEM_COLORS
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.game.board import Board
-
 from splendor_ai.game.player import Player
 
 
 class Game:
-
     def __init__(self, players):
-
         self.players = players
         self.num_players = len(players)
         # Make sure number of players is valid
@@ -51,7 +48,6 @@ class Game:
             player.nobles.append(self.board._nobles.pop[idx])
 
     def _take_three_coins_check(self, player, coins_to_take, coins_to_return=None):
-
         if coins_to_return is None:
             coins_to_return = dict()
 
@@ -79,7 +75,6 @@ class Game:
         return True
 
     def take_three_coins(self, player, coins_to_take, coins_to_return=None):
-
         if coins_to_return is None:
             coins_to_return = dict()
 
@@ -97,12 +92,10 @@ class Game:
 
 
     def _take_double_coins_check(self, player, coin_to_take, coins_to_return):
-
         if coins_to_return is None:
             coins_to_return = dict()
 
-        if player != self.players[self.player_turn]:
-            raise ValueError("It isn't this players turn")
+        self._verify_player_turn(player)
 
         if self.board.coins[coin_to_take] < 4:
             raise ValueError("There aren't at least 4 coins from the color you requested")
@@ -134,11 +127,7 @@ class Game:
 
         self._increment_player()
 
-    def _buy_deck_card_check(self, player: Player, level: int, idx: int, coins_to_pay: Dict[GemColor, int]):
-
-        if player != self.players[self.player_turn]:
-            raise ValueError("It isn't this players turn")
-
+    def _verify_card_exists(self, level, idx):
         if level not in [1, 2, 3]:
             raise ValueError("Card level must be an integer between 1 and 3")
 
@@ -147,6 +136,14 @@ class Game:
 
         if len(self.board.decks[level]) < idx:
             raise ValueError("There is no card in this position")
+
+    def _verify_player_turn(self, player: Player):
+        if player != self.players[self.player_turn]:
+            raise ValueError("It isn't this players turn")
+
+    def _buy_deck_card_check(self, player: Player, level: int, idx: int, coins_to_pay: Dict[GemColor, int]):
+        self._verify_player_turn(player)
+        self._verify_card_exists(level, idx)
 
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
             raise ValueError("You tried to pay with more coins than you own")
@@ -184,8 +181,7 @@ class Game:
         self._buy_card(player, self.board.decks[level].pop(idx - 1), coins_to_pay)
 
     def _buy_mortgaged_card_check(self, player, idx, coins_to_pay):
-        if player != self.players[self.player_turn]:
-            raise ValueError("It isn't this players turn")
+        self._verify_player_turn(player)
 
         if idx not in [1, 2, 3]:
             raise ValueError("Card index must be an integer between 1 and 3")
