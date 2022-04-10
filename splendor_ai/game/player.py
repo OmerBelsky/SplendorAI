@@ -43,3 +43,21 @@ class Player:
         combined_colors[GemColor.JOKER] = self.currency[GemColor.JOKER]
 
         return combined_colors
+
+    @property
+    def vectorized_state(self) -> List[int]:
+        # cache
+        discounts = self.discounts
+
+        # vectorize mortgaged cards and add 0's in non-existent cards
+        vectorized_mortgaged_cards = []
+        for card in self.mortgage_card:
+            vectorized_mortgaged_cards += card.vectorized_state
+        vectorized_mortgaged_cards += [0] * 8 * (3 - len(self.mortgage_card))
+
+        return [self.points, discounts[GemColor.WHITE], discounts[GemColor.RED],
+                discounts[GemColor.BLUE], discounts[GemColor.GREEN], discounts[GemColor.BLACK],
+                self.currency[GemColor.WHITE], self.currency[GemColor.RED],
+                self.currency[GemColor.BLUE], self.currency[GemColor.GREEN],
+                self.currency[GemColor.BLACK]] + vectorized_mortgaged_cards
+
