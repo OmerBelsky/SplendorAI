@@ -147,12 +147,6 @@ class Game:
 
         return True
 
-    def purchaseable_cards(self, player: Player):
-        cards_on_board = self.board.cards
-        purchasing_power = player.purchasing_power
-        affordable_cards = [card for card in cards_on_board if card.purchaseable_with(purchasing_power)]
-        return affordable_cards
-
     def _buy_card(self, player, card, coins_to_pay):
         for color, amnt in coins_to_pay.items():
             player.currency[color] -= amnt
