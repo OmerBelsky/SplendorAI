@@ -27,6 +27,7 @@ class Game:
 
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
+
                              for noble in self.board.nobles]
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
@@ -41,6 +42,7 @@ class Game:
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
                                           for noble in self.board.nobles]
+
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
@@ -89,7 +91,6 @@ class Game:
             self.board.coins[color] += amnt
 
         self._increment_player()
-
 
     def _take_double_coins_check(self, player, coin_to_take, coins_to_return):
         if coins_to_return is None:
