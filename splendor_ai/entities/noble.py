@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
 from splendor_ai.entities.gem_color import GemColor
 
@@ -22,3 +22,7 @@ class Noble:
             GemColor.GREEN: self.req_g,
             GemColor.BLACK: self.req_b
         }
+
+    @property
+    def vectorized_state(self) -> List[int]:
+        return [self.point_value, self.req_w, self.req_r, self.req_u, self.req_g, self.req_b]
