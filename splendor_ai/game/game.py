@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 from splendor_ai.constants import GEM_COLORS
 from splendor_ai.entities.gem_color import GemColor
@@ -235,3 +235,11 @@ class Game:
         for player in self.players:
             if player.points >= WINNING_SCORE:
                 return player
+
+    def card_to_level_index(self, card) -> Tuple[int, int]:
+        for deck_index, deck in enumerate(self.board.decks):
+            for card_index, deck_card in enumerate(deck):
+                if card is deck_card:
+                    return deck_index, card_index
+
+        raise ValueError("Card not in deck")

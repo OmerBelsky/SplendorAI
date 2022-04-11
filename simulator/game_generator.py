@@ -1,3 +1,5 @@
+from simulator.actions.purchase_card_action import PurchaseCardAction
+from simulator.actions.take_coins_action import TakeCoinsAction
 from simulator.bots.buy_alot_bot import BuyAlotBot
 from simulator.game_state import GameState
 from splendor_ai.game.game import Game
@@ -7,17 +9,9 @@ from splendor_ai.game.player import Player
 def generate_games(count, player_count=4):
     bots = [BuyAlotBot(Player()) for i in range(player_count)]
 
-    game = Game(bots)
+    game = Game([bot._represented_player for bot in bots])
     while game.winner is None:
         for bot in bots:
-            """
-                player: Player
-    other_players: List[Player] = field(default_factory=list)
-    deck_one: List[Card] = field(default_factory=list)
-    deck_two: List[Card] = field(default_factory=list)
-    deck_three: List[Card] = field(default_factory=list)
-    coins: Dict[GemColor, int] = field(default_factory=dict)
-    """
             represented_player = bot._represented_player
             game_state = GameState(
                 player=represented_player,
@@ -27,7 +21,18 @@ def generate_games(count, player_count=4):
                 deck_three=game.board.decks[2],
                 coins=game.board.coins
             )
-            turn = bot.turn(game_state)
+            action = bot.turn(game_state)
+            print(f"action: {action}")
+            if isinstance(action, PurchaseCardAction):
+                level, index = game.card_to_level_index(card=action.card)
+                game.buy_deck_card(action.player, level, index, action.payment)
+            if isinstance(action, TakeCoinsAction):
+                coins_taken = sum(action.coins_taken.values())
+                if coins_taken == 2:
+                    game.take_double_coins(action.player, action.coins_taken, action.coins_returned)
+                if coins_taken == 3:
+                    game.take_three_coins(action.player, action.coins_taken, action.coins_returned)
+                raise ValueError(f"Illegal TakeCoinsAction amount {coins_taken}")
     winner = game.winner
     print(f"the winner is {winner} with {winner.points} points")
 
