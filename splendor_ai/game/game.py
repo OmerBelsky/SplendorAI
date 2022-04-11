@@ -18,8 +18,13 @@ class Game:
         self.board = Board(self.num_players)
         self.player_turn = 0
 
+    @property
+    def vectorized_state(self):
+        player_order = [(self.player_turn + i) % self.num_players for i in range(self.num_players)]
+        return sum([self.players[plyr] for plyr in player_order], [])
+
     def _increment_player(self):
-        self.player_turn = (self.player_turn + 1) % self.num_players
+        self.player_turn = (self.player_turn + 1) % self.num_players + self.board.vectorized_state
 
     def distribute_nobles(self, player):
         player_colors = {color: sum([color == card.gem_color for card in player.cards])
