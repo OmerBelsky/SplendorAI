@@ -12,10 +12,3 @@ class SplendorBot:
     @abstractmethod
     def turn(self, game_state: GameState) -> PlayerAction:
         raise NotImplementedError()
-
-    @staticmethod
-    def purchaseable_cards(game_state: GameState):
-        cards_on_board = game_state.cards
-        purchasing_power = game_state.player.purchasing_power
-        affordable_cards = [card for card in cards_on_board if card.purchaseable_with(purchasing_power)]
-        return affordable_cards

@@ -5,6 +5,8 @@ from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.game.board import Board
 from splendor_ai.game.player import Player
 
+WINNING_SCORE = 15
+
 
 class Game:
     def __init__(self, players):
@@ -27,7 +29,7 @@ class Game:
 
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
-                                          for noble in self.board._nobles]
+                             for noble in self.board._nobles]
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
@@ -228,4 +230,8 @@ class Game:
 
         self._increment_player()
 
-
+    @property
+    def winner(self) -> Player:
+        for player in self.players:
+            if player.points >= WINNING_SCORE:
+                return player
