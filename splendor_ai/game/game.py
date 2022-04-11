@@ -47,8 +47,7 @@ class Game:
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
                                           for noble in self.board.nobles]
-
-
+        
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
         for idx in nobles_indices:
