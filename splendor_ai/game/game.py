@@ -30,6 +30,7 @@ class Game:
             self.game_winner = self.player_turn
         self.player_turn = (self.player_turn + 1) % self.num_players
 
+
     def distribute_nobles(self, player):
         player_colors = {color: sum([color == card.gem_color for card in player.cards])
                          for color in self.board.coins}
