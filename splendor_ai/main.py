@@ -6,6 +6,10 @@ from splendor_ai.constants import GEM_COLORS
 from itertools import product
 
 if __name__ == '__main__':
+    players = [Player() for _ in range(4)]
+    game = Game(players)
+    print(len(game.vectorized_state))
+    exit()
     # generate buy 3 return any actions
     actions = []
     for i, color1 in enumerate(GEM_COLORS):
