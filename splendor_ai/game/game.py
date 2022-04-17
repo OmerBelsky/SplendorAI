@@ -23,8 +23,9 @@ class Game:
         player_order = [(self.player_turn + i) % self.num_players for i in range(self.num_players)]
         return sum([self.players[plyr].vectorized_state for plyr in player_order], []) + self.board.vectorized_state
 
+
     def _increment_player(self):
-        self.player_turn = (self.player_turn + 1) % self.num_players
+        self.player_turn = (self.player_turn + 1) % self.num_players + self.board.vectorized_state
 
     def distribute_nobles(self, player):
         player_colors = {color: sum([color == card.gem_color for card in player.cards])
@@ -32,7 +33,7 @@ class Game:
 
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
-                             for noble in self.board.nobles]
+                                      for noble in self.board.nobles]
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
