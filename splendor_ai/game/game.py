@@ -18,6 +18,12 @@ class Game:
         self.board = Board(self.num_players)
         self.player_turn = 0
 
+    @property
+    def vectorized_state(self):
+        player_order = [(self.player_turn + i) % self.num_players for i in range(self.num_players)]
+        return sum([self.players[plyr].vectorized_state for plyr in player_order], []) + self.board.vectorized_state
+
+
     def _increment_player(self):
         self.player_turn = (self.player_turn + 1) % self.num_players
 
@@ -27,7 +33,7 @@ class Game:
 
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
-                             for noble in self.board.nobles]
+                                      for noble in self.board.nobles]
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
@@ -89,7 +95,6 @@ class Game:
             self.board.coins[color] += amnt
 
         self._increment_player()
-
 
     def _take_double_coins_check(self, player, coin_to_take, coins_to_return):
         if coins_to_return is None:
