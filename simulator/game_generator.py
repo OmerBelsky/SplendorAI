@@ -16,9 +16,9 @@ def generate_games(count, player_count=4):
             game_state = GameState(
                 player=represented_player,
                 other_players=[player for player in game.players if player is not represented_player],
-                deck_one=game.board.decks[0],
-                deck_two=game.board.decks[1],
-                deck_three=game.board.decks[2],
+                deck_one=game.board.decks[0][:4],
+                deck_two=game.board.decks[1][:4],
+                deck_three=game.board.decks[2][:4],
                 coins=game.board.coins
             )
             action = bot.turn(game_state)
@@ -26,13 +26,16 @@ def generate_games(count, player_count=4):
             if isinstance(action, PurchaseCardAction):
                 level, index = game.card_to_level_index(card=action.card)
                 game.buy_deck_card(action.player, level, index, action.payment)
-            if isinstance(action, TakeCoinsAction):
+            elif isinstance(action, TakeCoinsAction):
                 coins_taken = sum(action.coins_taken.values())
                 if coins_taken == 2:
                     game.take_double_coins(action.player, action.coins_taken, action.coins_returned)
-                if coins_taken == 3:
+                elif coins_taken == 3:
                     game.take_three_coins(action.player, action.coins_taken, action.coins_returned)
-                raise ValueError(f"Illegal TakeCoinsAction amount {coins_taken}")
+                else:
+                    raise ValueError(f"Illegal TakeCoinsAction amount {coins_taken}")
+            else:
+                raise ValueError("Unknown action")
     winner = game.winner
     print(f"the winner is {winner} with {winner.points} points")
 

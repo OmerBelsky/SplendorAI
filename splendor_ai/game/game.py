@@ -79,7 +79,7 @@ class Game:
 
         self._increment_player()
 
-    def _take_double_coins_check(self, player, coin_to_take, coins_to_return):
+    def _take_double_coins_check(self, player, coin_to_take: GemColor, coins_to_return: Dict[GemColor, int]):
         if coins_to_return is None:
             coins_to_return = dict()
 
@@ -99,7 +99,7 @@ class Game:
 
         return True
 
-    def take_double_coins(self, player, coin_to_take, coins_to_return=None):
+    def take_double_coins(self, player, coin_to_take: GemColor, coins_to_return: Dict[GemColor, int] = None):
 
         if coins_to_return is None:
             coins_to_return = dict()
@@ -237,7 +237,7 @@ class Game:
                 return player
 
     def card_to_level_index(self, card) -> Tuple[int, int]:
-        for deck_index, deck in enumerate(self.board.decks):
+        for deck_index, deck in self.board.decks.items():
             for card_index, deck_card in enumerate(deck):
                 if card is deck_card:
                     return deck_index, card_index

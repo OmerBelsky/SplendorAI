@@ -1,7 +1,7 @@
 import itertools
 import random
 from collections import defaultdict
-from typing import List
+from typing import List, Dict, Iterable
 
 from splendor_ai import constants
 from splendor_ai.entities.card import Card
@@ -36,5 +36,9 @@ class Board:
         }
 
     @property
-    def cards(self):
+    def cards(self) -> Iterable[Card]:
         return itertools.chain(self.decks[1], self.decks[2], self.decks[3])
+
+    @property
+    def open_cards(self) -> Iterable[Card]:
+        return itertools.chain(self.decks[1][:4], self.decks[2][:4], self.decks[3][:4])

@@ -1,5 +1,6 @@
+import random
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, Tuple, List
 
 from simulator.game_state import GameState
 from splendor_ai.entities.card import Card
@@ -44,3 +45,23 @@ def card_purchaseable_with(card: Card, purchasing_power: Dict[GemColor, int]) ->
             jokers_remaining += after_purchase
 
     return jokers_remaining >= 0
+
+
+def get_random_currency(coins: Dict[GemColor, int], count: int, must_be_unique: bool,
+                        ignore_colors: List[GemColor] = None) -> Tuple[Dict[GemColor, int], int]:
+    taken = defaultdict(int)
+    if ignore_colors is None:
+        coins_colors = coins.keys()
+    else:
+        coins_colors = [color for color in coins.keys() if color not in ignore_colors]
+
+    for coin_color in sorted(coins_colors, key=lambda _: random.random()):
+        coins_of_color = coins[coin_color]
+        for i in range(coins_of_color):
+            taken[coin_color] += 1
+            count -= 1
+            if count == 0:
+                return taken, 0
+            if must_be_unique:
+                break
+    return taken, count
