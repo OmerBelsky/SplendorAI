@@ -19,9 +19,19 @@ class Game:
         # Define currency and nobles according to number of players
         self.board = Board(self.num_players)
         self.player_turn = 0
+        self.game_winner = None
+
+    @property
+    def vectorized_state(self):
+        player_order = [(self.player_turn + i) % self.num_players for i in range(self.num_players)]
+        return sum([self.players[plyr].vectorized_state for plyr in player_order], []) + self.board.vectorized_state
+
 
     def _increment_player(self):
+        if self.players[self.player_turn].points >= 15:
+            self.game_winner = self.player_turn
         self.player_turn = (self.player_turn + 1) % self.num_players
+
 
     def distribute_nobles(self, player):
         player_colors = {color: sum([color == card.gem_color for card in player.cards])
@@ -29,12 +39,12 @@ class Game:
 
         obtainable_nobles = [all([player_colors[color] >= req
                                   for color, req in enumerate(noble.requirements)])
-                             for noble in self.board._nobles]
+                                          for noble in self.board.nobles]
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
         for idx in nobles_indices:
-            player.nobles.append(self.board._nobles.pop[idx])
+            player.nobles.append(self.board.nobles.pop[idx])
 
     def _take_three_coins_check(self, player, coins_to_take, coins_to_return=None):
         if coins_to_return is None:
@@ -155,7 +165,7 @@ class Game:
             self.board.coins[color] += amnt
 
         player.cards.append(card)
-
+        self.distribute_nobles(player)
         self._increment_player()
 
     def buy_deck_card(self, player, level, idx, coins_to_pay):
