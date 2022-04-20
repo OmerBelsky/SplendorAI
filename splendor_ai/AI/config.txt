@@ -1,7 +1,7 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 140
-pop_size              = 256
+pop_size              = 64
 reset_on_extinction   = False
 
 [DefaultGenome]
@@ -40,13 +40,13 @@ feed_forward            = True
 initial_connection      = full_direct
 
 # node add/remove rates
-node_add_prob           = 0.2
-node_delete_prob        = 0.2
+node_add_prob           = 0.3
+node_delete_prob        = 0.3
 
 # network parameters
-num_hidden              = 6
-num_inputs              = 272
-num_outputs             = 870
+num_hidden              = 4
+num_inputs              = 416
+num_outputs             = 2324
 
 # node response options
 response_init_mean      = 1.0

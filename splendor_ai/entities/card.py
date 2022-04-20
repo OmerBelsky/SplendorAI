@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 from splendor_ai.entities.gem_color import GemColor
-
+CARD_VECTOR_SIZE = 12
 
 @dataclass
 class Card:
@@ -27,7 +27,8 @@ class Card:
 
     @property
     def vectorized_state(self) -> List[int]:
-        return [self.level, self.gem_color, self.point_value, self.price_w,
+        from splendor_ai.constants import GEM_COLORS
+        return [color == self.gem_color for color in GEM_COLORS] + [self.level, self.point_value, self.price_w,
                 self.price_r, self.price_u, self.price_g, self.price_b]
 
     def purchaseable_with(self, purchasing_power: Dict[GemColor, int]) -> bool:

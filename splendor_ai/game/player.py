@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict
 
 from splendor_ai.constants import GEM_COLORS
-from splendor_ai.entities.card import Card
+from splendor_ai.entities.card import Card, CARD_VECTOR_SIZE
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.entities.noble import Noble
 
@@ -53,7 +53,7 @@ class Player:
         vectorized_mortgaged_cards = []
         for card in self.mortgage_card:
             vectorized_mortgaged_cards += card.vectorized_state
-        vectorized_mortgaged_cards += [0] * 8 * (3 - len(self.mortgage_card))
+        vectorized_mortgaged_cards += [0] * CARD_VECTOR_SIZE * (3 - len(self.mortgage_card))
 
         return [self.points, discounts[GemColor.WHITE], discounts[GemColor.RED],
                 discounts[GemColor.BLUE], discounts[GemColor.GREEN], discounts[GemColor.BLACK],
