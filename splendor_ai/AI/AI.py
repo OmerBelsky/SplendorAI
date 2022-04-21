@@ -155,7 +155,7 @@ def run(config):
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(1))
+    # p.add_reporter(neat.Checkpointer(1))
 
     # Run for up to 300 generations.
     print("evaluating genomes")
