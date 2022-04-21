@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 from splendor_ai.entities.gem_color import GemColor
+NOBLE_VECTOR_SIZE = 6
 
 @dataclass
 class Noble:

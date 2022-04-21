@@ -24,21 +24,35 @@ class Game:
     @property
     def vectorized_state(self):
         player_order = [(self.player_turn + i) % self.num_players for i in range(self.num_players)]
-        return sum([self.players[plyr].vectorized_state for plyr in player_order], []) + self.board.vectorized_state
+        player_purchase_power_1 = {
+            plyr: [max(max([card.price[color] - self.players[plyr].purchasing_power[color] for color in card.price]), 0) for
+                   card in self.board.decks[1][:4]] for plyr in player_order}
+        player_purchase_power_2 = {
+            plyr: [max(max([card.price[color] - self.players[plyr].purchasing_power[color] for color in card.price]), 0) for
+                   card in self.board.decks[2][:4]] for plyr in player_order}
+        player_purchase_power_3 = {
+            plyr: [max(max([card.price[color] - self.players[plyr].purchasing_power[color] for color in card.price]), 0) for
+                   card in self.board.decks[3][:4]] for plyr in player_order}
+        player_purchase_power = {plyr: (player_purchase_power_1[plyr] + [0] * 4)[:4] +
+                                       (player_purchase_power_2[plyr] + [0] * 4)[:4] +
+                                       (player_purchase_power_3[plyr] + [0] * 4)[:4]
+                                 for plyr in player_order}
+
+        return sum([self.players[plyr].vectorized_state + player_purchase_power[plyr] for plyr in player_order], []) +\
+               self.board.vectorized_state
 
 
     def _increment_player(self):
         if self.players[self.player_turn].points >= 15:
             self.game_winner = self.player_turn
+            return
         self.player_turn = (self.player_turn + 1) % self.num_players
 
-
     def distribute_nobles(self, player):
-        player_colors = {color: sum([color == card.gem_color for card in player.cards])
-                         for color in self.board.coins}
+        player_colors = player.discounts
 
         obtainable_nobles = [all([player_colors[color] >= req
-                                  for color, req in enumerate(noble.requirements)])
+                                  for color, req in noble.requirements.items()])
                                           for noble in self.board.nobles]
 
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
@@ -50,23 +64,29 @@ class Game:
         if coins_to_return is None:
             coins_to_return = dict()
 
-        if player != self.players[self.player_turn]:
-            raise ValueError("It isn't this players turn")
+        self._verify_player_turn(player)
 
-        if sum(coins_to_take.values()) > 3:
-            raise ValueError("At most 3 coins can be requested")
+        if sum(coins_to_take.values()) != 3:
+            raise ValueError("Only 3 coins can be requested")
 
-        if any([amnt > 1 for amnt in coins_to_take.values()]):
+        if any([amnt not in [0, 1] for amnt in coins_to_take.values()]):
             raise ValueError("Coins requested must be unique")
 
-        if not all([self.board.coins[color] > 0 for color in coins_to_take]):
+        if any([amnt < 0 for amnt in coins_to_return.values()]):
+            raise ValueError("Coins returned must be a non negative integer")
+
+        if not all([self.board.coins[color] > 0 for color in coins_to_take if (coins_to_take[color] - coins_to_return.get(color, 0)) > 0]):
             raise ValueError("One or more of the colors you requested is not available on the board")
 
-        if not all([player.currency[color] >= amnt for color, amnt in coins_to_return.items()]):
+        if not all([(player.currency.get(color, 0) + coins_to_take.get(color, 0)) >= amnt for color, amnt in coins_to_return.items()]):
             raise ValueError("You do no own one or more of the colors you tried to return")
 
-        if len(player.currency) + len(coins_to_take) - len(coins_to_return) > 10:
+        if sum(player.currency.values()) + sum(coins_to_take.values()) - sum(coins_to_return.values()) > 10:
             raise ValueError("Your action brings you to more than 10 coins")
+
+        if sum(coins_to_return.values()) > 0:
+            if sum(player.currency.values()) + sum(coins_to_take.values()) - sum(coins_to_return.values()) <= 10:
+                raise ValueError("Attempted to return coins even though total is brought to less than 10.")
 
         if GemColor.JOKER in coins_to_take:
             raise ValueError("Jokers can only be taken via mortgaging")
@@ -79,9 +99,9 @@ class Game:
 
         self._take_three_coins_check(player, coins_to_take, coins_to_return)
 
-        for color in coins_to_take:
-            player.currency[color] += 1
-            self.board.coins[color] -= 1
+        for color, amnt in coins_to_take.items():
+            player.currency[color] += amnt
+            self.board.coins[color] -= amnt
 
         for color, amnt in coins_to_return.items():
             player.currency[color] -= amnt
@@ -98,11 +118,18 @@ class Game:
         if self.board.coins[coin_to_take] < 4:
             raise ValueError("There aren't at least 4 coins from the color you requested")
 
-        if not all([player.currency[color] >= amnt for color, amnt in coins_to_return.items()]):
+        if any([amnt < 0 for amnt in coins_to_return.values()]):
+            raise ValueError("Coins returned must be a non negative integer")
+
+        if not all([(player.currency[color] + (2 if color == coin_to_take else 0)) >= amnt for color, amnt in coins_to_return.items()]):
             raise ValueError("You do no own one or more of the colors you tried to return")
 
-        if len(player.currency) + 2 - len(coins_to_return) > 10:
+        if sum(player.currency.values()) + 2 - sum(coins_to_return.values()) > 10:
             raise ValueError("Your action brings you to more than 10 coins")
+
+        if sum(coins_to_return.values()) > 0:
+            if sum(player.currency.values()) + 2 - sum(coins_to_return.values()) <= 10:
+                raise ValueError("Attempted to return coins even though total is brought to less than 10.")
 
         if GemColor.JOKER == coin_to_take:
             raise ValueError("Jokers can only be taken via mortgaging")
@@ -146,9 +173,12 @@ class Game:
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
             raise ValueError("You tried to pay with more coins than you own")
 
+        if any([payment < 0 for payment in coins_to_pay.values()]):
+            raise ValueError("Coins payed must be a non negative integer")
+
         discounts = player.discounts
         requested_card = self.board.decks[level][idx - 1]
-        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay.get(color, 0)
+        diff_dict = {color: max(requested_card.price.get(color, 0) - discounts.get(color, 0), 0) - coins_to_pay.get(color, 0)
                      for color in GEM_COLORS}
 
         if any([diff_dict[color] < 0 for color in diff_dict]):
@@ -184,10 +214,13 @@ class Game:
         if any([coins_to_pay[color] > player.currency[color] for color in coins_to_pay]):
             raise ValueError("You tried to pay with more coins than you own")
 
-        discounts = {color: sum([color == card.gem_color for card in player.cards]) for color in GEM_COLORS}
+        if any([payment < 0 for payment in coins_to_pay.values()]):
+            raise ValueError("Coins payed must be a non negative integer")
+
+        discounts = player.discounts
 
         requested_card = player.mortgage_card[idx - 1]
-        diff_dict = {color: max(requested_card.price[color] - discounts[color], 0) - coins_to_pay.get(color, 0)
+        diff_dict = {color: max(requested_card.price.get(color, 0) - discounts.get(color, 0), 0) - coins_to_pay.get(color, 0)
                      for color in GEM_COLORS}
 
         if any([diff_dict[color] < 0 for color in diff_dict]):
@@ -198,23 +231,15 @@ class Game:
 
         return True
 
-    def _buy_mortgaged_card(self, player, idx, coins_to_pay):
+    def buy_mortgaged_card(self, player, idx, coins_to_pay):
         self._buy_mortgaged_card_check(player, idx, coins_to_pay)
         self._buy_card(player, player.mortgage_card.pop(idx - 1), coins_to_pay)
 
     def _mortgage_card_check(self, player, level, idx, coin_to_return):
 
-        if player != self.players[self.player_turn]:
-            raise ValueError("It isn't this players turn")
+        self._verify_player_turn(player)
 
-        if level not in [1, 2, 3]:
-            raise ValueError("Card level must be an integer between 1 and 3")
-
-        if idx not in [1, 2, 3, 4]:
-            raise ValueError("Card index must be an integer between 1 and 4")
-
-        if len(self.board.decks[level]) < idx:
-            raise ValueError("There is no card in this position")
+        self._verify_card_exists(level, idx)
 
         if len(player.mortgage_card) == 3:
             raise ValueError("Player already has 3 cards mortgaged")
@@ -234,7 +259,7 @@ class Game:
         if self.board.coins[GemColor.JOKER] > 0:
             player.currency[GemColor.JOKER] += 1
             self.board.coins[GemColor.JOKER] -= 1
-            if len(player.currency) == 11:
+            if sum(player.currency.values()) == 11:
                 player.currency[coin_to_return] -= 1
                 self.board.coins[coin_to_return] += 1
 

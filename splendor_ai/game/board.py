@@ -4,9 +4,9 @@ from collections import defaultdict
 from typing import List, Dict, Iterable
 
 from splendor_ai import constants
-from splendor_ai.entities.card import Card
+from splendor_ai.entities.card import Card, CARD_VECTOR_SIZE
 from splendor_ai.entities.gem_color import GemColor
-from splendor_ai.entities.noble import Noble
+from splendor_ai.entities.noble import Noble, NOBLE_VECTOR_SIZE
 
 
 class Board:
@@ -53,15 +53,15 @@ class Board:
             vectorized_cards_level_2 += card.vectorized_state
         for card in self.decks[3][:4]:
             vectorized_cards_level_3 += card.vectorized_state
-        vectorized_cards_level_1 += [0] * 8 * (4 - len(self.decks[1][:4]))
-        vectorized_cards_level_2 += [0] * 8 * (4 - len(self.decks[2][:4]))
-        vectorized_cards_level_3 += [0] * 8 * (4 - len(self.decks[3][:4]))
+        vectorized_cards_level_1 += [0] * CARD_VECTOR_SIZE * (4 - len(self.decks[1][:4]))
+        vectorized_cards_level_2 += [0] * CARD_VECTOR_SIZE * (4 - len(self.decks[2][:4]))
+        vectorized_cards_level_3 += [0] * CARD_VECTOR_SIZE * (4 - len(self.decks[3][:4]))
 
         # vectorize nobles
         vectorized_nobles = []
         for noble in self.nobles:
             vectorized_nobles += noble.vectorized_state
-        vectorized_nobles += [0] * 6 * (self.num_players + 1 - len(self.nobles))
+        vectorized_nobles += [0] * NOBLE_VECTOR_SIZE * (self.num_players + 1 - len(self.nobles))
 
         return [self.coins[GemColor.WHITE], self.coins[GemColor.RED], self.coins[GemColor.BLUE],
                 self.coins[GemColor.GREEN], self.coins[GemColor.BLACK], self.coins[GemColor.JOKER]
