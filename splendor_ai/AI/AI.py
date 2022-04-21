@@ -7,7 +7,7 @@ from splendor_ai.constants import ACTION_DICT, GEM_COLORS,NUM_GAME_ROUNDS
 import numpy as np
 from time import time
 import dill
-from math import log
+from math import log10
 from random import shuffle
 
 
@@ -103,7 +103,7 @@ def play_game(player_genomes, nets):
                     game.mortgage_card(players[curr_player], level, idx,
                                        None if ret_coin == '' else GemColor(ret_coin))
                 player_genomes[curr_player][1].fitness += reward(action, players[curr_player]) / (
-                            log(game_round, 5) + 1)
+                            max(log10(game_round), 1))
                 action_taken = True
                 break
             except ValueError as e:
