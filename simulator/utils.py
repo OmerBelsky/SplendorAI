@@ -9,8 +9,8 @@ from splendor_ai.game.player import Player
 from splendor_ai.constants import GEM_COLORS
 
 
-def get_purchaseable_cards(game_state: GameState):
-    cards_on_board = game_state.cards
+def get_purchaseable_cards(game_state: GameState) -> List[Card]:
+    cards_on_board = game_state.open_cards
     purchasing_power = game_state.player.purchasing_power
     affordable_cards = [card for card in cards_on_board if card_purchaseable_with(card, purchasing_power)]
     return affordable_cards

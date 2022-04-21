@@ -16,7 +16,7 @@ def generate_games(count, player_count=4):
             game_state = GameState(
                 player=represented_player,
                 other_players=[player for player in game.players if player is not represented_player],
-                cards=game.board.open_cards,
+                open_cards=game.board.open_cards,
                 coins=game.board.coins
             )
             action = bot.turn(game_state)

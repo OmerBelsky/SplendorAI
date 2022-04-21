@@ -10,5 +10,5 @@ from splendor_ai.game.player import Player
 class GameState:
     player: Player
     other_players: List[Player] = field(default_factory=list)
-    cards: List[Card] = field(default_factory=list)
+    open_cards: List[Card] = field(default_factory=list)
     coins: Dict[GemColor, int] = field(default_factory=dict)
