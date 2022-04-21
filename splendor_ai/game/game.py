@@ -82,9 +82,18 @@ class Game:
         if sum(player.currency.values()) + sum(coins_to_take.values()) - sum(coins_to_return.values()) > 10:
             raise ValueError("Your action brings you to more than 10 coins")
 
-        if sum(coins_to_return.values()) > 0:
-            if sum(player.currency.values()) + sum(coins_to_take.values()) - sum(coins_to_return.values()) <= 10:
-                raise ValueError("Attempted to return coins even though total is brought to less than 10.")
+        if sum(coins_to_return.values()) > 0: # if returning coins (taking less than 3)
+            if sum(player.currency.values()) + sum(coins_to_take.values()) - sum(coins_to_return.values()) < 10: # if it brings you to less than 10 coins
+                existing_colors = [color for color in GEM_COLORS if self.board.coins[color] > 0]
+                if len(existing_colors) >= 3: # if there are enough colors to choose 3 of.
+                    raise ValueError("Attempted to return coins even though total is brought to less than 10.")
+                else:
+                    for color, amnt in coins_to_return.items():
+                        if amnt > 0:
+                            if (self.board.coins[color] == 0) and (coins_to_take.get(color, 0) == amnt):
+                                pass
+                            else:
+                                raise ValueError("Attempted to return coins even though total is brought to less than 10.")
 
         if GemColor.JOKER in coins_to_take:
             raise ValueError("Jokers can only be taken via mortgaging")
@@ -248,7 +257,7 @@ class Game:
         if len(player.mortgage_card) == 3:
             raise ValueError("Player already has 3 cards mortgaged")
 
-        if coin_to_return is None and len(player.currency) == 10:
+        if coin_to_return is None and sum(player.currency.values()) == 10:
             raise ValueError("If you take a joker coin you must return another coin")
 
         return True
