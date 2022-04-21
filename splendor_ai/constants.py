@@ -1,6 +1,7 @@
 from splendor_ai.entities.card import Card
 from splendor_ai.entities.gem_color import GemColor
 from splendor_ai.entities.noble import Noble
+NUM_GAME_ROUNDS = 3
 
 GEM_COLORS = [GemColor.BLACK, GemColor.BLUE, GemColor.RED, GemColor.GREEN, GemColor.WHITE]
 
