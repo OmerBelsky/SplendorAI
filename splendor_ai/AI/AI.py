@@ -59,9 +59,9 @@ def play_game(player_genomes, nets):
                     ret_coins = [GemColor(int(color)) for color in action.split("ret")[1].split("_") if color != '']
                     get_coins = [GemColor(int(color)) for color in action.split("ret")[0].split("_")[1:] if
                                  color != '']
-                    game.take_three_coins(players[curr_player],
-                                          {color: 1 if color in get_coins else 0 for color in GEM_COLORS},
-                                          {color: sum([c == color for c in ret_coins]) for color in GEM_COLORS})
+                    game.take_unique_coins(players[curr_player],
+                                           {color: 1 if color in get_coins else 0 for color in GEM_COLORS},
+                                           {color: sum([c == color for c in ret_coins]) for color in GEM_COLORS})
                 elif action.startswith("buy2"):
                     ret_coins = [GemColor(int(color)) for color in action.split("ret")[1].split("_") if color != '']
                     get_coins = GemColor(int(action.split("_")[1]))

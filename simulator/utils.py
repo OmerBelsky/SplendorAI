@@ -22,9 +22,14 @@ def get_payment_for_card(player: Player, card: Card):
     jokers_remaining = purchasing_power.get(GemColor.JOKER, 0)
     price = card.price
     assert card_purchaseable_with(card, purchasing_power)
+
     for color in GEM_COLORS:
-        player_coins_of_color = purchasing_power.get(color, 0)
-        after_purchase = player_coins_of_color - price[color]
+        required_coins = price.get(color, 0) - player.discounts.get(color, 0)
+        if required_coins <= 0:
+            continue
+
+        player_coins_of_color = player.currency.get(color, 0)
+        after_purchase = player_coins_of_color - required_coins
         if after_purchase < 0:
             payment[color] = player_coins_of_color
             remaining_payment = abs(after_purchase)
@@ -32,7 +37,7 @@ def get_payment_for_card(player: Player, card: Card):
             jokers_remaining -= remaining_payment
             payment[GemColor.JOKER] += remaining_payment
         else:
-            payment[color] = price[color]
+            payment[color] = required_coins
     return payment
 
 

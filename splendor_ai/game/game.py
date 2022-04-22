@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 from splendor_ai.constants import GEM_COLORS
 from splendor_ai.entities.gem_color import GemColor
@@ -9,7 +9,7 @@ WINNING_SCORE = 15
 
 
 class Game:
-    def __init__(self, players):
+    def __init__(self, players: List[Player]):
         self.players = players
         self.num_players = len(players)
         # Make sure number of players is valid
@@ -50,7 +50,7 @@ class Game:
             return
         self.player_turn = (self.player_turn + 1) % self.num_players
 
-    def distribute_nobles(self, player):
+    def distribute_nobles(self, player: Player):
         player_colors = player.discounts
 
         obtainable_nobles = [all([player_colors[color] >= req
@@ -62,14 +62,26 @@ class Game:
         for idx in nobles_indices:
             player.nobles.append(self.board.nobles.pop[idx])
 
-    def _take_three_coins_check(self, player, coins_to_take, coins_to_return=None):
+    def take_coins(self, player: Player, coins_to_take: Dict[GemColor, int],
+                   coins_to_return: Dict[GemColor, int] = None):
+        if sum(coins_to_take.values()) == 2:
+            for color, count in coins_to_take.items():
+                if count == 2:
+                    return self.take_double_coins(player, color, coins_to_return)
+        return self.take_unique_coins(player, coins_to_take, coins_to_return)
+
+    def _take_unique_coins_check(self, player: Player, coins_to_take: Dict[GemColor, int],
+                                 coins_to_return: Dict[GemColor, int] = None):
         if coins_to_return is None:
             coins_to_return = dict()
 
         self._verify_player_turn(player)
 
-        if sum(coins_to_take.values()) != 3:
-            raise ValueError("Only 3 coins can be requested")
+        if sum(coins_to_take.values()) > 3:
+            raise ValueError("Only less or equal to 3 coins can be requested")
+
+        if sum(coins_to_take.values()) < sum(coins_to_return.values()):
+            raise ValueError("You cant take less coins than you return")
 
         if any([amnt not in [0, 1] for amnt in coins_to_take.values()]):
             raise ValueError("Coins requested must be unique")
@@ -85,11 +97,11 @@ class Game:
                     coins_to_return.items()]):
             raise ValueError("You do no own one or more of the colors you tried to return")
 
-        if sum(player.currency.values()) + sum(coins_to_take.values()) - sum(coins_to_return.values()) > 10:
+        if player.total_currency + sum(coins_to_take.values()) - sum(coins_to_return.values()) > 10:
             raise ValueError("Your action brings you to more than 10 coins")
 
         if sum(coins_to_return.values()) > 0:  # if returning coins (taking less than 3)
-            if sum(player.currency.values()) + sum(coins_to_take.values()) - sum(
+            if player.total_currency + sum(coins_to_take.values()) - sum(
                     coins_to_return.values()) < 10:  # if it brings you to less than 10 coins
                 existing_colors = [color for color in GEM_COLORS if self.board.coins[color] > 0]
                 if len(existing_colors) >= 3:  # if there are enough colors to choose 3 of.
@@ -108,11 +120,12 @@ class Game:
 
         return True
 
-    def take_three_coins(self, player, coins_to_take, coins_to_return=None):
+    def take_unique_coins(self, player, coins_to_take: Dict[GemColor, int],
+                          coins_to_return: Dict[GemColor, int] = None):
         if coins_to_return is None:
             coins_to_return = dict()
 
-        self._take_three_coins_check(player, coins_to_take, coins_to_return)
+        self._take_unique_coins_check(player, coins_to_take, coins_to_return)
 
         for color, amnt in coins_to_take.items():
             player.currency[color] += amnt
@@ -140,11 +153,11 @@ class Game:
                     coins_to_return.items()]):
             raise ValueError("You do no own one or more of the colors you tried to return")
 
-        if sum(player.currency.values()) + 2 - sum(coins_to_return.values()) > 10:
+        if player.total_currency + 2 - sum(coins_to_return.values()) > 10:
             raise ValueError("Your action brings you to more than 10 coins")
 
         if sum(coins_to_return.values()) > 0:
-            if sum(player.currency.values()) + 2 - sum(coins_to_return.values()) <= 10:
+            if player.total_currency + 2 - sum(coins_to_return.values()) <= 10:
                 raise ValueError("Attempted to return coins even though total is brought to less than 10.")
 
         if GemColor.JOKER == coin_to_take:
@@ -254,21 +267,18 @@ class Game:
         self._buy_card(player, player.mortgage_card.pop(idx - 1), coins_to_pay)
 
     def _mortgage_card_check(self, player, level, idx, coin_to_return):
-
         self._verify_player_turn(player)
-
         self._verify_card_exists(level, idx)
 
         if len(player.mortgage_card) == 3:
             raise ValueError("Player already has 3 cards mortgaged")
 
-        if coin_to_return is None and sum(player.currency.values()) == 10:
+        if coin_to_return is None and player.total_currency == 10:
             raise ValueError("If you take a joker coin you must return another coin")
 
         return True
 
     def mortgage_card(self, player, level, idx, coin_to_return=None):
-
         self._mortgage_card_check(player, level, idx, coin_to_return)
 
         requested_card = self.board.decks[level].pop(idx - 1)
@@ -277,7 +287,7 @@ class Game:
         if self.board.coins[GemColor.JOKER] > 0:
             player.currency[GemColor.JOKER] += 1
             self.board.coins[GemColor.JOKER] -= 1
-            if sum(player.currency.values()) == 11:
+            if player.total_currency == 11:
                 player.currency[coin_to_return] -= 1
                 self.board.coins[coin_to_return] += 1
 

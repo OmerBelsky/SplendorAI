@@ -25,13 +25,7 @@ def generate_games(count, player_count=4):
                 level, index = game.card_to_level_index(card=action.card)
                 game.buy_deck_card(action.player, level, index, action.payment)
             elif isinstance(action, TakeCoinsAction):
-                coins_taken = sum(action.coins_taken.values())
-                if coins_taken == 2:
-                    game.take_double_coins(action.player, action.coins_taken, action.coins_returned)
-                elif coins_taken == 3:
-                    game.take_three_coins(action.player, action.coins_taken, action.coins_returned)
-                else:
-                    raise ValueError(f"Illegal TakeCoinsAction amount {coins_taken}")
+                game.take_coins(action.player, action.coins_taken, action.coins_returned)
             else:
                 raise ValueError("Unknown action")
     winner = game.winner

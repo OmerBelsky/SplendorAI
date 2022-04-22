@@ -6,7 +6,6 @@ from simulator.actions.take_coins_action import TakeCoinsAction
 from simulator.bots.splendor_bot import SplendorBot
 from simulator.game_state import GameState
 from simulator.utils import get_payment_for_card, get_purchaseable_cards, get_random_currency
-from splendor_ai.constants import GEM_COLORS
 from splendor_ai.entities.gem_color import GemColor
 
 
@@ -18,8 +17,7 @@ class BuyAlotBot(SplendorBot, ABC):
             payment = get_payment_for_card(player=game_state.player, card=card)
             return PurchaseCardAction(player=game_state.player, card=card, payment=payment)
 
-        coin_count = len(game_state.player.currency)
-        remaining_coins_until_three = min((10 - coin_count), 3)
+        remaining_coins_until_three = min((10 - game_state.player.total_currency), 3)
         coins_taken, remaining_count = get_random_currency(
             game_state.coins,
             remaining_coins_until_three,
