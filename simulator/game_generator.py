@@ -4,9 +4,10 @@ from simulator.bots.buy_alot_bot import BuyAlotBot
 from simulator.game_state import GameState
 from splendor_ai.game.game import Game
 from splendor_ai.game.player import Player
+from timeit import default_timer as timer
 
 
-def generate_games(count, player_count=4):
+def generate_games(player_count=4, suppress_logs=False):
     bots = [BuyAlotBot(Player()) for i in range(player_count)]
 
     game = Game([bot._represented_player for bot in bots])
@@ -20,7 +21,8 @@ def generate_games(count, player_count=4):
                 coins=game.board.coins
             )
             action = bot.turn(game_state)
-            print(f"action: {action}")
+            if not suppress_logs:
+                print(f"action: {action}")
             if isinstance(action, PurchaseCardAction):
                 level, index = game.card_to_level_index(card=action.card)
                 game.buy_deck_card(action.player, level, index, action.payment)
@@ -30,9 +32,18 @@ def generate_games(count, player_count=4):
                 raise ValueError("Unknown action")
             if game.winner is not None:
                 break
-    winner = game.winner
-    print(f"the winner is {winner} with {winner.points} points")
+    return game.winner
 
 
 if __name__ == '__main__':
-    generate_games(10)
+    times = []
+    for i in range(10):
+        start = timer()
+        winner = generate_games(suppress_logs=True)
+        end = timer()
+        elapsed = end - start
+        times.append(elapsed)
+        print(f"time for game: {elapsed}")  # Time in seconds, e.g. 5.38091952400282
+        print("------------------------------------")
+        print(f"the winner of game with {winner.points} points is {winner}")
+    print(f"avg time for game: {sum(times) / len(times)}")
