@@ -1,7 +1,7 @@
 import itertools
 import random
 from collections import defaultdict
-from typing import List
+from typing import List, Dict, Iterable
 
 from splendor_ai import constants
 from splendor_ai.entities.card import Card, CARD_VECTOR_SIZE
@@ -37,8 +37,8 @@ class Board:
         }
 
     @property
-    def cards(self):
-        return itertools.chain(self.decks[1][:4], self.decks[2][:4], self.decks[3][:4])
+    def cards(self) -> Iterable[Card]:
+        return itertools.chain(self.decks[1], self.decks[2], self.decks[3])
 
     @property
     def vectorized_state(self) -> List[int]:
@@ -66,3 +66,7 @@ class Board:
         return [self.coins[GemColor.WHITE], self.coins[GemColor.RED], self.coins[GemColor.BLUE],
                 self.coins[GemColor.GREEN], self.coins[GemColor.BLACK], self.coins[GemColor.JOKER]
                 ] + vectorized_cards_level_1 + vectorized_cards_level_2 + vectorized_cards_level_3 + vectorized_nobles
+
+    @property
+    def open_cards(self) -> Iterable[Card]:
+        return itertools.chain(self.decks[1][:4], self.decks[2][:4], self.decks[3][:4])

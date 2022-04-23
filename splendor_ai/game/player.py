@@ -16,6 +16,10 @@ class Player:
     nobles: List[Noble] = field(default_factory=list)
 
     @property
+    def total_currency(self) -> int:
+        return sum(self.currency.values())
+
+    @property
     def points(self) -> int:
         return self.noble_points + self.card_points
 
@@ -36,7 +40,7 @@ class Player:
 
     @property
     def purchasing_power(self) -> Dict[GemColor, int]:
-        combined_colors = dict()
+        combined_colors = defaultdict(int)
         discounts = self.discounts
         for color in GEM_COLORS:
             combined_colors[color] = self.currency[color] + discounts[color]

@@ -4,6 +4,7 @@ from splendor_ai.entities.noble import Noble
 NUM_GAME_ROUNDS = 3
 
 GEM_COLORS = [GemColor.BLACK, GemColor.BLUE, GemColor.RED, GemColor.GREEN, GemColor.WHITE]
+GEM_COLORS_INCL_JOKER = GEM_COLORS + [GemColor.JOKER]
 
 NOBLES = [
     Noble(4, 0, 0, 0, 4),
