@@ -17,18 +17,19 @@ class BuyAlotBot(SplendorBot, ABC):
             payment = get_payment_for_card(player=game_state.player, card=card)
             return PurchaseCardAction(player=game_state.player, card=card, payment=payment)
 
-        remaining_coins_until_three = min((10 - game_state.player.total_currency), 3)
         coins_taken, remaining_count = get_random_currency(
             game_state.coins,
-            remaining_coins_until_three,
+            3,
             must_be_unique=True,
             ignore_colors=[GemColor.JOKER]
         )
         coins_returned = defaultdict(int)
-        if remaining_count > 0:
+
+        if sum(coins_taken.values()) + game_state.player.total_currency > 10:
+            coins_to_return = (sum(coins_taken.values()) + game_state.player.total_currency) - 10
             coins_returned, cant_return = get_random_currency(
                 game_state.player.currency,
-                remaining_count,
+                coins_to_return,
                 must_be_unique=False
             )
             if cant_return > 0:

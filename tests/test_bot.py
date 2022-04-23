@@ -93,3 +93,19 @@ def test_purchase_get_payment_discount_sanity():
     payment = utils.get_payment_for_card(player, card)
     assert sum(payment.values()) == 60
     assert payment[GemColor.RED] == 60
+
+
+def test_purchase_get_payment_discount_double():
+    card = Card(
+        level=999, gem_color=GemColor.WHITE, point_value=999,
+        price_w=0,
+        price_r=100,
+        price_u=50,
+        price_g=0,
+        price_b=0,
+    )
+    player = Player(currency=UNLIMITED_MONEY, cards=get_cards(GemColor.RED, 40) + get_cards(GemColor.BLUE, 20))
+    payment = utils.get_payment_for_card(player, card)
+    assert sum(payment.values()) == 60 + 30
+    assert payment[GemColor.RED] == 60
+    assert payment[GemColor.BLUE] == 30

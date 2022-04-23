@@ -54,6 +54,8 @@ def card_purchaseable_with(card: Card, purchasing_power: Dict[GemColor, int]) ->
 
 def get_random_currency(coins: Dict[GemColor, int], count: int, must_be_unique: bool,
                         ignore_colors: List[GemColor] = None) -> Tuple[Dict[GemColor, int], int]:
+    assert count > 0
+    original_count = count
     taken = defaultdict(int)
     if ignore_colors is None:
         coins_colors = coins.keys()

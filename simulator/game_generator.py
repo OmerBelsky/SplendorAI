@@ -28,6 +28,8 @@ def generate_games(count, player_count=4):
                 game.take_coins(action.player, action.coins_taken, action.coins_returned)
             else:
                 raise ValueError("Unknown action")
+            if game.winner is not None:
+                break
     winner = game.winner
     print(f"the winner is {winner} with {winner.points} points")
 

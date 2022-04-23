@@ -60,7 +60,7 @@ class Game:
         nobles_indices = sorted([i for i, obtainable in enumerate(obtainable_nobles) if obtainable], reverse=True)
 
         for idx in nobles_indices:
-            player.nobles.append(self.board.nobles.pop[idx])
+            player.nobles.append(self.board.nobles.pop(idx))
 
     def take_coins(self, player: Player, coins_to_take: Dict[GemColor, int],
                    coins_to_return: Dict[GemColor, int] = None):
