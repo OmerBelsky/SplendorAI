@@ -1,14 +1,21 @@
 import neat
 import os
+
+from simulator.actions.take_coins_action import TakeCoinsAction
 from splendor_ai.game.player import Player
 from splendor_ai.game.game import Game
 from splendor_ai.entities.gem_color import GemColor
-from splendor_ai.constants import ACTION_DICT, GEM_COLORS,NUM_GAME_ROUNDS
+from splendor_ai.constants import ACTION_DICT, GEM_COLORS, NUM_GAME_ROUNDS
 import numpy as np
 from time import time
 import dill
 from math import log10
 from random import shuffle
+
+
+def str_to_action(action_str: str, player: Player):
+    if action_str.startswith("buy3") or action_str.startswith("buy2"):
+        return TakeCoinsAction.from_str(action_str, player)
 
 
 def reward(action_str, player):
@@ -28,7 +35,8 @@ def reward(action_str, player):
             latest_noble = player.nobles[-1]
             discounts = player.discounts
             if latest_noble.requirements[bought_card] > 0:  # if color is required by noble
-                if discounts[bought_card.gem_color] - 1 < latest_noble.requirements[bought_card.gem_color]:  # if without this card he can't get the noble
+                if discounts[bought_card.gem_color] - 1 < latest_noble.requirements[
+                    bought_card.gem_color]:  # if without this card he can't get the noble
                     currently_acquired = True
         return bought_card.point_value + 3 if currently_acquired else 0
     elif action_str.startswith("mortgage"):
@@ -103,7 +111,7 @@ def play_game(player_genomes, nets):
                     game.mortgage_card(players[curr_player], level, idx,
                                        None if ret_coin == '' else GemColor(ret_coin))
                 player_genomes[curr_player][1].fitness += reward(action, players[curr_player]) / (
-                            max(log10(game_round), 1))
+                    max(log10(game_round), 1))
                 action_taken = True
                 break
             except ValueError as e:
@@ -162,7 +170,6 @@ def run(config):
     winner = p.run(eval_genomes, 10)
     with open("best.dill", 'wb') as f:
         dill.dump(winner, f)
-
 
 
 if __name__ == "__main__":
